@@ -1,6 +1,7 @@
 /* Write your CSS here */
 .team-matches-container {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   min-height: 100vh;
 }
@@ -66,4 +67,9 @@
   .recent-matches-list {
     margin-top: 32px;
   }
+}
+
+.back-button {
+  height: 50px;
+  width: 200px;
 }

@@ -1,10 +1,9 @@
-// Write your code here
 import {Component} from 'react'
 import Loader from 'react-loader-spinner'
-
+import {PieChart, Pie, Cell, Tooltip, Legend} from 'recharts'
+import {withRouter} from 'react-router-dom'
 import LatestMatch from '../LatestMatch'
 import MatchCard from '../MatchCard'
-
 import './index.css'
 
 const teamMatchesApiUrl = 'https://apis.ccbp.in/ipl/'
@@ -50,6 +49,11 @@ class TeamMatches extends Component {
     this.setState({teamMatchesData: formattedData, isLoading: false})
   }
 
+  handleBackButtonClick = () => {
+    const {history} = this.props
+    history.goBack()
+  }
+
   renderRecentMatchesList = () => {
     const {teamMatchesData} = this.state
     const {recentMatches} = teamMatchesData
@@ -63,15 +67,71 @@ class TeamMatches extends Component {
     )
   }
 
+  getMatchStatistics = () => {
+    const {teamMatchesData} = this.state
+    const {recentMatches} = teamMatchesData
+
+    const statistics = {
+      won: 0,
+      lost: 0,
+      drawn: 0,
+    }
+
+    recentMatches.forEach(match => {
+      switch (match.matchStatus) {
+        case 'Won':
+          statistics.won += 1
+          break
+        case 'Lost':
+          statistics.lost += 1
+          break
+        case 'Drawn':
+          statistics.drawn += 1
+          break
+        default:
+          break
+      }
+    })
+
+    return statistics
+  }
+
   renderTeamMatches = () => {
     const {teamMatchesData} = this.state
     const {teamBannerURL, latestMatch} = teamMatchesData
+
+    const matchStatistics = this.getMatchStatistics()
 
     return (
       <div className="responsive-container">
         <img src={teamBannerURL} alt="team banner" className="team-banner" />
         <LatestMatch latestMatchData={latestMatch} />
         {this.renderRecentMatchesList()}
+        <div className="pie-chart-container">
+          <h2>Match Statistics</h2>
+          <PieChart width={400} height={250}>
+            <Pie
+              dataKey="value"
+              isAnimationActive
+              data={[
+                {name: 'Won', value: matchStatistics.won},
+                {name: 'Lost', value: matchStatistics.lost},
+                {name: 'Drawn', value: matchStatistics.drawn},
+              ]}
+              cx={200}
+              cy={125}
+              outerRadius={80}
+              fill="#8884d8"
+              label
+            >
+              <Cell fill="#82ca9d" />
+              <Cell fill="#8884d8" />
+              <Cell fill="#FF8042" />
+            </Pie>
+            <Tooltip />
+            <Legend />
+          </PieChart>
+        </div>
       </div>
     )
   }
@@ -115,10 +175,17 @@ class TeamMatches extends Component {
 
     return (
       <div className={className}>
+        <button
+          type="button"
+          className="back-button"
+          onClick={this.handleBackButtonClick}
+        >
+          Back
+        </button>
         {isLoading ? this.renderLoader() : this.renderTeamMatches()}
       </div>
     )
   }
 }
 
-export default TeamMatches
+export default withRouter(TeamMatches)
